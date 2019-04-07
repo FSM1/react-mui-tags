@@ -1,26 +1,15 @@
-React-Tags
+React Material-UI Tags
 ===
 
-[![MIT](https://img.shields.io/npm/l/react-tag-input.svg?style=flat-square)](https://github.com/prakhar1989/react-tags/blob/master/LICENSE)
-[![NPM Version](https://img.shields.io/npm/v/react-tag-input.svg?style=flat-square)](https://www.npmjs.com/package/react-tag-input)
-[![Dependency Status](https://david-dm.org/yahoo/react-dnd-touch-backend.svg)](https://david-dm.org/yahoo/react-dnd-touch-backend)
-[![devDependency Status](https://david-dm.org/yahoo/react-dnd-touch-backend/dev-status.svg)](https://david-dm.org/yahoo/react-dnd-touch-backend#info=devDependencies)
-[![npm downloads](https://img.shields.io/npm/dm/react-tag-input.svg?style=flat-square)](https://www.npmjs.com/package/react-tag-input)
-[![build status](https://img.shields.io/travis/prakhar1989/react-tags.svg?style=flat-square)](https://travis-ci.org/prakhar1989/react-tags)
-[![Greenkeeper badge](https://badges.greenkeeper.io/prakhar1989/react-tags.svg)](https://greenkeeper.io/)
-[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
-<a href="https://codeclimate.com/github/prakhar1989/react-tags/maintainability"><img src="https://api.codeclimate.com/v1/badges/b9edb2810b02bb845d20/maintainability" /></a>
-<a href="https://codeclimate.com/github/prakhar1989/react-tags/test_coverage"><img src="https://api.codeclimate.com/v1/badges/b9edb2810b02bb845d20/test_coverage" /></a>
-
-React-tags is a simple tagging component ready to drop in your React projects. The component is inspired by GMail's *To* field in the compose window.
+React Material-UI Tags is a simple tagging component ready to drop in your React projects. Originally based on the React Tags project by Prakhar Srivastav this version removes the drag-and-drop re-ordering functionality, 
 
 ### Features
 - Autocomplete based on a suggestion list
 - Keyboard friendly and mouse support
-- Reorder tags using drag and drop
+- Material-UI input and tag components by default.
 
 ### Why
-Because I was looking for an excuse to build a standalone component and publish it in the wild? To be honest, I needed a tagging component that provided the above features for my [React-Surveyman](http://github.com/prakhar1989/react-surveyman) project. Since I was unable to find one which met my requirements (and the fact that I generally enjoy re-inventing the wheel) this is what I came up with.
+Because I did not need the dependency on DnD, and wanted to play around with publishing a component.
 
 
 ### Demo
