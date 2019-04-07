@@ -8,6 +8,7 @@ import PropTypes from 'prop-types';
 import ClassNames from 'classnames';
 import memoizeOne from 'memoize-one';
 import Tag from './Tag';
+import { Input, Grid } from '@material-ui/core';
 
 import { buildRegExpFromDelimiters } from './utils';
 
@@ -20,10 +21,9 @@ import {
   INPUT_FIELD_POSITIONS,
 } from './constants';
 
-const updateClassNames  = memoizeOne((classNames) =>
-{
+const updateClassNames = memoizeOne((classNames) => {
   return {
-    classNames : {...DEFAULT_CLASSNAMES,...classNames},
+    classNames: { ...DEFAULT_CLASSNAMES, ...classNames },
   };
 });
 
@@ -38,7 +38,6 @@ class ReactTags extends Component {
     ),
     delimiters: PropTypes.arrayOf(PropTypes.number),
     autofocus: PropTypes.bool,
-    inline: PropTypes.bool, // TODO: Remove in v7.x.x
     inputFieldPosition: PropTypes.oneOf([INPUT_FIELD_POSITIONS.INLINE, INPUT_FIELD_POSITIONS.TOP, INPUT_FIELD_POSITIONS.BOTTOM]),
     handleDelete: PropTypes.func,
     handleAddition: PropTypes.func,
@@ -48,6 +47,7 @@ class ReactTags extends Component {
     allowDeleteFromEmptyInput: PropTypes.bool,
     allowAdditionFromPaste: PropTypes.bool,
     allowDragDrop: PropTypes.bool,
+    allowNew: PropTypes.bool,
     resetInputOnDelete: PropTypes.bool,
     handleInputChange: PropTypes.func,
     handleInputFocus: PropTypes.func,
@@ -78,28 +78,22 @@ class ReactTags extends Component {
     suggestions: [],
     delimiters: [KEYS.ENTER, KEYS.TAB],
     autofocus: true,
-    inline: true, // TODO: Remove in v7.x.x
     inputFieldPosition: INPUT_FIELD_POSITIONS.INLINE,
     handleDelete: noop,
     handleAddition: noop,
-    allowDeleteFromEmptyInput: true,
+    allowDeleteFromEmptyInput: false,
     allowAdditionFromPaste: true,
     resetInputOnDelete: true,
     autocomplete: false,
     readOnly: false,
     allowUnique: true,
     allowDragDrop: true,
+    allowNew: true,
     tags: [],
   };
 
   constructor(props) {
     super(props);
-
-    if (!props.inline) {
-      /* eslint-disable no-console */
-      console.warn('[Deprecation] The inline attribute is deprecated and will be removed in v7.x.x, please use inputFieldPosition instead.');
-      /* eslint-enable no-console */
-    }
 
     const { suggestions, classNames } = props;
     this.state = {
@@ -120,11 +114,9 @@ class ReactTags extends Component {
     this.resetAndFocusInput = this.resetAndFocusInput.bind(this);
     this.handleSuggestionHover = this.handleSuggestionHover.bind(this);
     this.handleSuggestionClick = this.handleSuggestionClick.bind(this);
-
   }
 
-  static getDerivedStateFromProps(props)
-  {
+  static getDerivedStateFromProps(props) {
     const { classNames } = props;
     return updateClassNames(classNames);
   }
@@ -314,7 +306,8 @@ class ReactTags extends Component {
   }
 
   addTag = (tag) => {
-    const { tags, labelField, allowUnique } = this.props;
+    const { tags, labelField, allowUnique, allowNew, autocomplete } = this.props;
+    const { selectedIndex, suggestions } = this.state;
     if (!tag.id || !tag[labelField]) {
       return;
     }
@@ -324,31 +317,44 @@ class ReactTags extends Component {
     if (allowUnique && existingKeys.indexOf(tag.id.toLowerCase()) >= 0) {
       return;
     }
-    if (this.props.autocomplete) {
+    if (autocomplete) {
       const possibleMatches = this.filteredSuggestions(
         tag[labelField],
         this.props.suggestions
       );
 
       if (
-        (this.props.autocomplete === 1 && possibleMatches.length === 1) ||
-        (this.props.autocomplete === true && possibleMatches.length)
+        (autocomplete === 1 && possibleMatches.length === 1) ||
+        (autocomplete === true && possibleMatches.length)
       ) {
         tag = possibleMatches[0];
       }
     }
 
-    // call method to add
-    this.props.handleAddition(tag);
+    if (allowNew) {
+      // call method to add
+      this.props.handleAddition(tag);
+      // reset the state
+      this.setState({
+        query: '',
+        selectionMode: false,
+        selectedIndex: -1,
+      });
 
-    // reset the state
-    this.setState({
-      query: '',
-      selectionMode: false,
-      selectedIndex: -1,
-    });
+      this.resetAndFocusInput();
+    } else if (selectedIndex !== -1) {
+      this.props.handleAddition(suggestions[selectedIndex]);
+      // reset the state
+      this.setState({
+        query: '',
+        selectionMode: false,
+        selectedIndex: -1,
+      });
 
-    this.resetAndFocusInput();
+      this.resetAndFocusInput();
+    }
+
+
   };
 
   handleSuggestionClick(i) {
@@ -385,19 +391,21 @@ class ReactTags extends Component {
     const moveTag = allowDragDrop ? this.moveTag : null;
     return tags.map((tag, index) => {
       return (
-        <Tag
-          key={`${tag.id}-${index}`}
-          index={index}
-          tag={tag}
-          labelField={labelField}
-          onDelete={this.handleDelete.bind(this, index)}
-          moveTag={moveTag}
-          removeComponent={removeComponent}
-          onTagClicked={this.handleTagClick.bind(this, index)}
-          readOnly={readOnly}
-          classNames={classNames}
-          allowDragDrop={allowDragDrop}
-        />
+        <Grid item key={`${tag.id}-${index}`}>
+          <Tag
+            key={`${tag.id}-${index}`}
+            index={index}
+            tag={tag}
+            labelField={labelField}
+            onDelete={this.handleDelete.bind(this, index)}
+            moveTag={moveTag}
+            removeComponent={removeComponent}
+            onTagClicked={this.handleTagClick.bind(this, index)}
+            readOnly={readOnly}
+            classNames={classNames}
+            allowDragDrop={allowDragDrop}
+          />
+        </Grid>
       );
     });
   };
@@ -419,12 +427,10 @@ class ReactTags extends Component {
       inputFieldPosition,
     } = this.props;
 
-    const position = !inline ? INPUT_FIELD_POSITIONS.BOTTOM : inputFieldPosition;
-
     const tagInput = !this.props.readOnly ? (
       <div className={this.state.classNames.tagInput}>
-        <input
-          ref={(input) => {
+        <Input
+          inputRef={(input) => {
             this.textInput = input;
           }}
           className={this.state.classNames.tagInputField}
@@ -440,6 +446,7 @@ class ReactTags extends Component {
           id={inputId}
           maxLength={maxLength}
           value={this.props.inputValue}
+          variant={'standard'}
         />
 
         <Suggestions
@@ -459,14 +466,16 @@ class ReactTags extends Component {
     ) : null;
 
     return (
-      <div className={ClassNames(this.state.classNames.tags, 'react-tags-wrapper')}>
-        {position === INPUT_FIELD_POSITIONS.TOP && tagInput}
-        <div className={this.state.classNames.selected}>
-          {tagItems}
-          {position === INPUT_FIELD_POSITIONS.INLINE && tagInput}
-        </div>
-        {position === INPUT_FIELD_POSITIONS.BOTTOM && tagInput}
-      </div>
+      <Grid container className={ClassNames(this.state.classNames.tags, 'react-tags-wrapper')}>
+        {inputFieldPosition === INPUT_FIELD_POSITIONS.TOP && <Grid item xs={12}>{tagInput}</Grid>}
+        <Grid item>
+          <Grid container spacing={8}>
+            {tagItems}
+            {inputFieldPosition === INPUT_FIELD_POSITIONS.INLINE && <Grid item>{tagInput}</Grid>}
+          </Grid>
+        </Grid>
+        {inputFieldPosition === INPUT_FIELD_POSITIONS.BOTTOM && <Grid item xs={12}>{tagInput}</Grid>}
+      </Grid>
     );
   }
 }

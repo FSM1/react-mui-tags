@@ -288,6 +288,8 @@ class App extends React.Component {
           handleAddition={this.handleAddition}
           handleDrag={this.handleDrag}
           handleTagClick={this.handleTagClick}
+          inputFieldPosition="bottom"
+          allowNew={true}
         />
       </div>
     );
