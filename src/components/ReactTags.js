@@ -9,7 +9,6 @@ import ClassNames from 'classnames';
 import memoizeOne from 'memoize-one';
 import Tag from './Tag';
 import { Input, Grid } from '@material-ui/core';
-
 import { buildRegExpFromDelimiters } from './utils';
 
 //Constants
